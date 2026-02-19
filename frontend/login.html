@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EduSafeGuard — Login</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+body {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background:
+    radial-gradient(ellipse at 30% 40%, rgba(56,189,248,0.07) 0%, transparent 55%),
+    radial-gradient(ellipse at 70% 80%, rgba(129,140,248,0.06) 0%, transparent 55%),
+    var(--navy);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Background grid */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(56,189,248,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(56,189,248,0.04) 1px, transparent 1px);
+  background-size: 60px 60px;
+  pointer-events: none;
+}
+
+.login-container {
+  width: 100%;
+  max-width: 440px;
+  padding: 20px;
+  position: relative;
+  z-index: 1;
+}
+
+.login-brand {
+  text-align: center;
+  margin-bottom: 32px;
+}
+.login-brand .shield {
+  width: 64px; height: 64px;
+  background: linear-gradient(135deg, var(--cyan), var(--teal));
+  border-radius: 18px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 30px;
+  margin: 0 auto 14px;
+  box-shadow: 0 8px 32px var(--cyan-glow);
+}
+.login-brand h1 {
+  font-family: var(--font-display);
+  font-size: 1.7rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--text-primary);
+}
+.login-brand p {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+
+.login-card {
+  background: rgba(17,24,39,0.95);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-xl);
+  padding: 32px;
+  box-shadow: var(--shadow), 0 0 60px rgba(56,189,248,0.05);
+  backdrop-filter: blur(20px);
+}
+
+/* ROLE SELECTOR */
+.role-selector {
+  display: flex;
+  gap: 6px;
+  padding: 5px;
+  background: var(--surface);
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  margin-bottom: 24px;
+}
+.role-btn {
+  flex: 1;
+  padding: 10px 8px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  color: var(--text-dim);
+}
+.role-btn .role-icon { font-size: 20px; }
+.role-btn:hover { color: var(--text-secondary); }
+.role-btn.active {
+  background: var(--navy);
+  color: var(--cyan);
+  border: 1px solid rgba(56,189,248,0.25);
+  box-shadow: 0 2px 12px rgba(56,189,248,0.1);
+}
+
+/* CREDENTIAL HINT */
+.role-hint {
+  display: none;
+  margin-bottom: 16px;
+  animation: slideIn 0.3s ease;
+}
+.role-hint.show { display: block; }
+
+/* SECURE INDICATOR */
+.secure-badge {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  justify-content: center;
+  margin-top: 18px;
+  font-size: 0.76rem;
+  color: var(--text-dim);
+}
+.secure-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--emerald);
+  animation: pulse 2s infinite;
+}
+
+/* DIVIDER */
+.or-divider {
+  text-align: center;
+  margin: 20px 0;
+  position: relative;
+  color: var(--text-dim);
+  font-size: 0.78rem;
+}
+.or-divider::before, .or-divider::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: 42%;
+  height: 1px;
+  background: var(--border);
+}
+.or-divider::before { left: 0; }
+.or-divider::after { right: 0; }
+
+/* SHOW PASSWORD */
+.input-group {
+  position: relative;
+}
+.show-pass {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-dim);
+  font-size: 16px;
+  transition: var(--transition);
+  padding: 4px;
+}
+.show-pass:hover { color: var(--text-secondary); }
+
+/* LOGIN BTN LOADING */
+.btn-login {
+  width: 100%;
+  padding: 13px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  justify-content: center;
+  margin-top: 6px;
+  position: relative;
+  overflow: hidden;
+}
+.btn-login::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+  transform: translateX(-100%);
+  transition: transform 0.6s ease;
+}
+.btn-login:hover::after { transform: translateX(100%); }
+
+/* ERROR STATE */
+.error-msg {
+  background: var(--risk-high-bg);
+  border: 1px solid rgba(239,68,68,0.25);
+  border-radius: var(--radius);
+  padding: 10px 14px;
+  font-size: 0.82rem;
+  color: var(--rose);
+  display: none;
+  animation: slideIn 0.3s ease;
+  margin-bottom: 14px;
+}
+.error-msg.show { display: flex; gap: 8px; align-items: center; }
+
+/* FORGOT */
+.forgot-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 6px;
+  margin-bottom: 16px;
+}
+.forgot-link {
+  font-size: 0.78rem;
+  color: var(--cyan);
+  text-decoration: none;
+}
+.forgot-link:hover { text-decoration: underline; }
+
+/* INSTITUTION CODE */
+.inst-code-hint {
+  text-align: center;
+  margin-top: 20px;
+  font-size: 0.8rem;
+  color: var(--text-dim);
+}
+.inst-code-hint a {
+  color: var(--cyan);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+/* ANIMATED DECORATIONS */
+.login-decorations {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 0;
+}
+.float-dot {
+  position: absolute;
+  border-radius: 50%;
+  animation: float linear infinite;
+  opacity: 0.3;
+}
+@keyframes float {
+  from { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+  10% { opacity: 0.3; }
+  90% { opacity: 0.3; }
+  to { transform: translateY(-100px) rotate(360deg); opacity: 0; }
+}
+</style>
+</head>
+<body>
+
+<!-- Animated background particles -->
+<div class="login-decorations" id="decorations"></div>
+
+<div class="login-container">
+
+  <div class="login-brand">
+    <div class="shield">🛡️</div>
+    <h1>EduSafeGuard</h1>
+    <p>Student Risk Intelligence Platform</p>
+  </div>
+
+  <div class="login-card">
+
+    <div style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.1em; color:var(--text-dim); font-weight:600; margin-bottom:10px;">Select Your Role</div>
+
+    <!-- ROLE SELECTOR -->
+    <div class="role-selector">
+      <button class="role-btn" id="role-admin" onclick="selectRole('admin')">
+        <span class="role-icon">🧑‍💼</span>
+        Admin
+      </button>
+      <button class="role-btn active" id="role-student" onclick="selectRole('student')">
+        <span class="role-icon">🎓</span>
+        Student
+      </button>
+      <button class="role-btn" id="role-counselor" onclick="selectRole('counselor')">
+        <span class="role-icon">🧑‍🏫</span>
+        Counselor
+      </button>
+    </div>
+
+    <!-- HINTS per role -->
+    <div class="role-hint show" id="hint-student">
+      <div class="alert-item info" style="margin:0;">
+        <div class="alert-icon">ℹ️</div>
+        <div class="alert-body">
+          <h4>Student Login</h4>
+          <p>Use your Roll Number as username and Date of Birth (DDMMYYYY) as password.</p>
+        </div>
+      </div>
+    </div>
+    <div class="role-hint" id="hint-admin">
+      <div class="alert-item info" style="margin:0;background:rgba(129,140,248,0.1);border-color:rgba(129,140,248,0.2)">
+        <div class="alert-icon">🔐</div>
+        <div class="alert-body">
+          <h4>Admin Login</h4>
+          <p>Use credentials provided during institution registration. Contact Main Admin if locked out.</p>
+        </div>
+      </div>
+    </div>
+    <div class="role-hint" id="hint-counselor">
+      <div class="alert-item info" style="margin:0;background:rgba(167,139,250,0.1);border-color:rgba(167,139,250,0.2)">
+        <div class="alert-icon">🧑‍🏫</div>
+        <div class="alert-body">
+          <h4>Counselor Login</h4>
+          <p>Use counselor credentials provided by your institution admin.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ERROR MESSAGE -->
+    <div class="error-msg" id="error-msg">
+      <span>⚠️</span>
+      <span id="error-text">Invalid credentials. Please check and try again.</span>
+    </div>
+
+    <!-- LOGIN FORM -->
+    <div class="form-group" style="margin-top:8px">
+      <label class="form-label" id="username-label">Username / Roll Number</label>
+      <input class="form-input" type="text" placeholder="Enter your username" id="login-username" autocomplete="username">
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Password</label>
+      <div class="input-group">
+        <input class="form-input" type="password" placeholder="Enter your password" id="login-password" autocomplete="current-password">
+        <button class="show-pass" onclick="togglePassword()" id="pass-toggle">👁️</button>
+      </div>
+    </div>
+
+    <div class="forgot-row">
+      <a href="#" class="forgot-link" onclick="forgotPassword(event)">Forgot password?</a>
+    </div>
+
+    <button class="btn btn-primary btn-login" onclick="doLogin()" id="login-btn">
+      Sign In to Dashboard
+    </button>
+
+    <div class="secure-badge">
+      <div class="secure-dot"></div>
+      Secured with JWT authentication · 256-bit encryption
+    </div>
+
+  </div>
+
+  <div class="inst-code-hint">
+    New institution? <a href="register.html">Register here</a> &nbsp;|&nbsp; <a href="#" style="color:var(--text-dim)">Help</a>
+  </div>
+
+</div>
+
+<script>
+let currentRole = 'student';
+let passwordVisible = false;
+
+// Demo credentials
+const demoCredentials = {
+  admin:     { username: 'ADM-GFC-2025', password: 'Gfc@Admin#7832', redirect: 'admin-dashboard.html' },
+  student:   { username: 'STU-1001-2025', password: '01012005', redirect: 'student-dashboard.html' },
+  counselor: { username: 'CNS-GFC-2025', password: 'Gfc@Couns#5241', redirect: 'counselor-dashboard.html' },
+};
+
+function selectRole(role) {
+  currentRole = role;
+  document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(`role-${role}`).classList.add('active');
+  document.querySelectorAll('.role-hint').forEach(h => h.classList.remove('show'));
+  document.getElementById(`hint-${role}`).classList.add('show');
+
+  const labels = { admin: 'Admin Username', student: 'Roll Number', counselor: 'Counselor Username' };
+  document.getElementById('username-label').textContent = labels[role];
+  document.getElementById('error-msg').classList.remove('show');
+
+  // Autofill demo values
+  const creds = demoCredentials[role];
+  document.getElementById('login-username').value = creds.username;
+  document.getElementById('login-password').value = creds.password;
+}
+
+function togglePassword() {
+  const inp = document.getElementById('login-password');
+  passwordVisible = !passwordVisible;
+  inp.type = passwordVisible ? 'text' : 'password';
+  document.getElementById('pass-toggle').textContent = passwordVisible ? '🙈' : '👁️';
+}
+
+function doLogin() {
+  const username = document.getElementById('login-username').value.trim();
+  const password = document.getElementById('login-password').value;
+  const btn = document.getElementById('login-btn');
+  const errMsg = document.getElementById('error-msg');
+
+  if (!username || !password) {
+    showError('Please fill in both username and password.');
+    return;
+  }
+
+  // Loading state
+  btn.textContent = '⏳ Authenticating...';
+  btn.disabled = true;
+  errMsg.classList.remove('show');
+
+  const creds = demoCredentials[currentRole];
+
+  setTimeout(() => {
+    if (username === creds.username && password === creds.password) {
+      btn.textContent = '✅ Redirecting...';
+      btn.style.background = 'linear-gradient(135deg, var(--emerald), var(--teal))';
+      setTimeout(() => { window.location.href = creds.redirect; }, 800);
+    } else {
+      showError('Invalid credentials. Check username and password.');
+      btn.textContent = 'Sign In to Dashboard';
+      btn.disabled = false;
+      btn.style.background = '';
+    }
+  }, 1400);
+}
+
+function showError(msg) {
+  document.getElementById('error-text').textContent = msg;
+  document.getElementById('error-msg').classList.add('show');
+}
+
+function forgotPassword(e) {
+  e.preventDefault();
+  alert('Please contact your institution administrator to reset your password.');
+}
+
+// Keyboard shortcut
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter') doLogin();
+});
+
+// Default role on load
+selectRole('student');
+
+// Floating particles
+const dec = document.getElementById('decorations');
+const colors = ['rgba(56,189,248,0.5)', 'rgba(129,140,248,0.5)', 'rgba(45,212,191,0.5)'];
+for (let i = 0; i < 12; i++) {
+  const dot = document.createElement('div');
+  dot.className = 'float-dot';
+  const size = Math.random() * 4 + 2;
+  dot.style.cssText = `
+    width: ${size}px; height: ${size}px;
+    left: ${Math.random() * 100}%;
+    background: ${colors[Math.floor(Math.random() * colors.length)]};
+    animation-duration: ${Math.random() * 20 + 15}s;
+    animation-delay: ${Math.random() * -20}s;
+  `;
+  dec.appendChild(dot);
+}
+</script>
+</body>
+</html>
